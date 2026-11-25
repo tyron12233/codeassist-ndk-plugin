@@ -1,7 +1,7 @@
 name: NDK plugin release
 
-# Builds the NDK plugin (samples/ndk-plugin) as one release-signed APK per ABI and attaches them to a CodeAssist
-# release as CodeAssist-NDK-Plugin-<version>-<abi>.apk.
+# Builds the NDK plugin as one release-signed APK per ABI and attaches them to a release
+# of this repository as CodeAssist-NDK-Plugin-<version>-<abi>.apk.
 #
 # The compiler inside it is not built here: it comes from the `ndk-toolchain-<key>` prerelease the NDK toolchain
 # workflow published for this commit's toolchain sources (tools/ndk-toolchain/toolchain-key.sh). With no such
@@ -92,7 +92,7 @@ jobs:
           echo "kotlin.incremental=false" >> ~/.gradle/gradle.properties
 
       - name: Run the plugin's unit tests
-        run: ./gradlew :samples:ndk-plugin:testDebugUnitTest --console=plain --stacktrace
+        run: ./gradlew :testDebugUnitTest --console=plain --stacktrace
 
       # The keystore is written outside the checkout and only for the build step's lifetime.
       - name: Build the release APKs
@@ -106,18 +106,18 @@ jobs:
           export RELEASE_STORE_FILE="$RUNNER_TEMP/upload.jks"
           echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > "$RELEASE_STORE_FILE"
           trap 'rm -f "$RELEASE_STORE_FILE"' EXIT
-          ./gradlew :samples:ndk-plugin:assembleRelease --console=plain --stacktrace
+          ./gradlew :assembleRelease --console=plain --stacktrace
 
       - name: Check and name the APKs
         id: apks
         run: |
           apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
-          version="$(sed -n 's/^version = "\(.*\)"/\1/p' samples/ndk-plugin/src/main/res/raw/codeassist_plugin.toml | head -1)"
+          version="$(sed -n 's/^version = "\(.*\)"/\1/p' src/main/res/raw/codeassist_plugin.toml | head -1)"
           [[ -n "$version" ]] || { echo "no version in codeassist_plugin.toml" >&2; exit 1; }
           mkdir -p dist
           for abi in $ABIS; do
-            apk="samples/ndk-plugin/build/outputs/apk/release/ndk-plugin-$abi-release.apk"
-            test -f "$apk" || { echo "no release APK for $abi" >&2; ls samples/ndk-plugin/build/outputs/apk/release >&2; exit 1; }
+            apk="build/outputs/apk/release/ndk-plugin-$abi-release.apk"
+            test -f "$apk" || { echo "no release APK for $abi" >&2; ls build/outputs/apk/release >&2; exit 1; }
             "$apksigner" verify "$apk"
             cp "$apk" "dist/CodeAssist-NDK-Plugin-$version-$abi.apk"
           done
