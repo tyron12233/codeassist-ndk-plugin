@@ -163,7 +163,7 @@ Two GitHub workflows do the release, so nothing here has to be built on a deskto
   `./toolchain-key.sh`'s hash of this script and the daemon sources. It runs when those change on `main`, or by
   hand; a key that already has a complete build is skipped. Each host takes one to two hours.
 - **NDK plugin release** (`.github/workflows/ndk-plugin.yml`) runs when a CodeAssist release is published:
-  it downloads the toolchain for the release commit's key, builds `:samples:ndk-plugin:assembleRelease` signed
+  it downloads the toolchain for the release commit's key, builds `assembleRelease` signed
   with the upload key (repository secrets), and attaches `CodeAssist-NDK-Plugin-<version>-<abi>.apk` for every
   ABI. Its summary prints the `plugin_catalog` update for the Get plugins page. Run it by hand with a tag to
   redo a release, or with no tag to only build.

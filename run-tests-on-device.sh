@@ -7,13 +7,13 @@
 # runs where libndkclangd.so can: arm64 Android. So the same JUnit 5 suite is dexed and run under dalvikvm,
 # with the toolchain pushed beside it so the device-only tests have a real clang to talk to.
 #
-# Usage:  samples/ndk-plugin/run-tests-on-device.sh [test-package]     (default: dev.codeassist.ndk)
+# Usage:  ./run-tests-on-device.sh [test-package]     (default: dev.codeassist.ndk)
 # Needs:  adb, an Android SDK with build-tools (for d8), a JDK (javac), and a built toolchain in
 #         tools/ndk-toolchain/build/out (or -Pndk.toolchain.dir's equivalent via NDK_TOOLCHAIN_DIR).
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-root="$(cd "$here/../.." && pwd)"
+root="$here"
 pkg="${1:-dev.codeassist.ndk}"
 sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Library/Android/sdk}}"
 adb="$sdk/platform-tools/adb"
@@ -28,7 +28,7 @@ log() { printf '\n==> %s\n' "$*"; }
 log "compiling the tests and capturing their runtime classpath"
 cat > "$work/cp.gradle" <<'EOF'
 allprojects {
-    tasks.matching { it.name == "testDebugUnitTest" && it.project.path == ":samples:ndk-plugin" }.configureEach { t ->
+    tasks.matching { it.name == "testDebugUnitTest" && it.project.path == ":" }.configureEach { t ->
         t.doFirst {
             new File(System.getProperty("cpOut")).text = t.classpath.files.join("\n")
             throw new StopExecutionException()
@@ -36,7 +36,7 @@ allprojects {
     }
 }
 EOF
-(cd "$root" && ./gradlew :samples:ndk-plugin:testDebugUnitTest --rerun -q -I "$work/cp.gradle" -DcpOut="$work/cp.txt")
+(cd "$root" && ./gradlew testDebugUnitTest --rerun -q -I "$work/cp.gradle" -DcpOut="$work/cp.txt")
 android_jar="$(grep '/android.jar$' "$work/cp.txt")"
 grep -v -E '/android.jar$|/R.jar$' "$work/cp.txt" > "$work/run-cp.txt"
 

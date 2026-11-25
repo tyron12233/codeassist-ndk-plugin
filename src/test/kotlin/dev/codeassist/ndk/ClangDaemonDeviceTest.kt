@@ -20,7 +20,7 @@ import kotlin.io.path.writeText
  * runs against, which only exist on arm64 Android.
  *
  * Run on ART with `-Dndk.lib=<dir holding libndkclangd.so, libclang.so, ...>` and
- * `-Dndk.toolchain=<unpacked assets/toolchain>` (see samples/ndk-plugin/run-tests-on-device.sh). This is
+ * `-Dndk.toolchain=<unpacked assets/toolchain>` (see run-tests-on-device.sh). This is
  * what covers the half the JVM cannot: the C side of the protocol, libclang's answers going through the
  * Kotlin parsers on ART's regex engine, and a daemon that dies mid-session falling back and coming back.
  */

@@ -1,4 +1,5 @@
-rootProject.name = "codeassist-ndk-plugin"
+// The APK file names come from this (`ndk-plugin-<abi>-release.apk`), which the release workflow expects.
+rootProject.name = "ndk-plugin"
 
 pluginManagement {
     repositories {
